@@ -18,9 +18,9 @@ public class CreateUserRequest {
     private String name;
     private String job;
 
-    // Construtores, getters e setters
+    // Constructors, getters, and setters
 
-    // Exemplo de método para obter um objeto JSON a partir do POJO
+    // Example method to convert the POJO to a JSON object
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.addProperty("name", name);
@@ -29,49 +29,63 @@ public class CreateUserRequest {
     }
 }
 
+public class CreateUserResponse {
+    private String id;
+    private String name;
+    private String job;
+    private String createdAt;
+
+    // Constructors, getters, and setters
+}
+
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class CreateUserTest {
 
+    @BeforeClass
+    public void setup() {
+        RestAssured.baseURI = "https://reqres.in/api";
+    }
+
     @Test
     public void testCreateUser() {
-        // Configuração da base URL
-        RestAssured.baseURI = "https://reqres.in/api";
-
-        // Criar um objeto CreateUserRequest com os dados desejados
+        // Create a CreateUserRequest object with the desired data
         CreateUserRequest request = new CreateUserRequest();
         request.setName("John Doe");
         request.setJob("Engineer");
 
-        // Enviar a requisição POST e receber a resposta
+        // Send the POST request and receive the response
         Response response = given()
                 .contentType(ContentType.JSON)
                 .body(request.toJson().toString())
                 .when()
                 .post("/users");
 
-        // Verificar o status code da resposta
+        // Verify the status code of the response
         assertEquals(response.statusCode(), 201);
 
-        // Verificar se os campos obrigatórios estão presentes no corpo da resposta
+        // Verify if the mandatory fields are present in the response body
         String responseBody = response.getBody().asString();
         assertTrue(responseBody.contains("id"));
         assertTrue(responseBody.contains("name"));
         assertTrue(responseBody.contains("job"));
         assertTrue(responseBody.contains("createdAt"));
 
-        // Verificar o contrato da resposta utilizando POJOs
+        // Verify the response contract using POJOs
         CreateUserResponse createUserResponse = response.getBody().as(CreateUserResponse.class);
         assertEquals(createUserResponse.getName(), "John Doe");
         assertEquals(createUserResponse.getJob(), "Engineer");
     }
 }
+
 
 
 
